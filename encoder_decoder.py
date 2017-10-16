@@ -24,8 +24,20 @@ hidden_size = 256
 # output_lang = input_output_lang['output_lang']
 
 # pkl_file.close()
+encoder_path = '/home/knswamy153/FlaskApp/flask_rest_service/lang_translate'
+decoder_path = '/home/knswamy153/FlaskApp/flask_rest_service/lang_translate'
+lang_data_path = '/home/knswamy153/FlaskApp/flask_rest_service/lang_translate'
 
 
+input_lang_french_data_path = os.path.join(lang_data_path, 'input_lang_data.pkl')
+output_lang_french_data_path = os.path.join(lang_data_path, 'output_lang_data.pkl')
+encoder_lang_french_path = os.path.join(lang_data_path, 'encoder1.pth')
+decoder_lang_french_path = os.path.join(lang_data_path, 'attn_decoder1.pth')
+
+input_lang_german_data_path = os.path.join(lang_data_path, 'input_lang_ger_data.pkl')
+output_lang_german_data_path = os.path.join(lang_data_path, 'output_lang_ger_data.pkl')
+encoder_lang_german_path = os.path.join(lang_data_path, 'ger_encoder1.pth')
+decoder_lang_german_path = os.path.join(lang_data_path, 'ger_attn_decoder1.pth')
 
 class Lang:
     def __init__(self, name):
@@ -120,6 +132,44 @@ class AttnDecoderRNN(nn.Module):
         else:
             return result 
 
+pkl_file = open(input_lang_french_data_path, 'rb')
+input_lang_french_data = pickle.load(pkl_file)
+input_lang_french = Lang('eng')
+input_lang_french.load_dict(input_lang_french_data)
+
+pkl_file = open(output_lang_french_data_path, 'rb')
+output_lang_french_data = pickle.load(pkl_file)
+output_lang_french = Lang('fra')
+output_lang_french.load_dict(output_lang_french_data)
+
+pkl_file.close()
+
+pkl_file = open(input_lang_german_data_path, 'rb')
+input_lang_german_data = pickle.load(pkl_file)
+input_lang_german = Lang('eng')
+input_lang_german.load_dict(input_lang_german_data)
+
+pkl_file = open(output_lang_german_data_path, 'rb')
+output_lang_german_data = pickle.load(pkl_file)
+output_lang_german = Lang('ger')
+output_lang_german.load_dict(output_lang_german_data)
+
+pkl_file.close()
+
+#print input_lang.n_words
+encoder_french = EncoderRNN(input_lang_french.n_words,hidden_size)
+encoder_french.load_state_dict(torch.load(encoder_lang_french_path))
+
+decoder_french = AttnDecoderRNN(hidden_size, output_lang_french.n_words, 1, dropout_p=0.1)
+decoder_french.load_state_dict(torch.load(decoder_lang_french_path))
+
+encoder_german = EncoderRNN(input_lang_german.n_words,hidden_size)
+encoder_german.load_state_dict(torch.load(encoder_lang_german_path))
+
+decoder_german = AttnDecoderRNN(hidden_size, output_lang_german.n_words, 1, dropout_p=0.1)
+decoder_german.load_state_dict(torch.load(decoder_lang_german_path))
+
+
 def unicodeToAscii(s):
     return ''.join(
         c for c in unicodedata.normalize('NFD', s)
@@ -185,50 +235,56 @@ def evaluate(encoder, decoder, input_lang, output_lang, sentence, max_length=MAX
     return decoded_words, decoder_attentions[:di + 1]
 
 def main(args):
-    encoder_path = '/home/knswamy153/FlaskApp/flask_rest_service/lang_translate'
-    decoder_path = '/home/knswamy153/FlaskApp/flask_rest_service/lang_translate'
-    lang_data_path = '/home/knswamy153/FlaskApp/flask_rest_service/lang_translate'
+    # encoder_path = '/home/knswamy153/FlaskApp/flask_rest_service/lang_translate'
+    # decoder_path = '/home/knswamy153/FlaskApp/flask_rest_service/lang_translate'
+    # lang_data_path = '/home/knswamy153/FlaskApp/flask_rest_service/lang_translate'
 
-    if (args.which_lang == 'french'):
-        input_lang_data_path = os.path.join(lang_data_path, 'input_lang_data.pkl')
-        output_lang_data_path = os.path.join(lang_data_path, 'output_lang_data.pkl')
-        encoder_lang_path = os.path.join(lang_data_path, 'encoder1.pth')
-        decoder_lang_path = os.path.join(lang_data_path, 'attn_decoder1.pth')
+    # if (args.which_lang == 'french'):
+    #     input_lang_data_path = os.path.join(lang_data_path, 'input_lang_data.pkl')
+    #     output_lang_data_path = os.path.join(lang_data_path, 'output_lang_data.pkl')
+    #     encoder_lang_path = os.path.join(lang_data_path, 'encoder1.pth')
+    #     decoder_lang_path = os.path.join(lang_data_path, 'attn_decoder1.pth')
 
-    else:
-        input_lang_data_path = os.path.join(lang_data_path, 'input_lang_ger_data.pkl')
-        output_lang_data_path = os.path.join(lang_data_path, 'output_lang_ger_data.pkl')
-        encoder_lang_path = os.path.join(lang_data_path, 'ger_encoder1.pth')
-        decoder_lang_path = os.path.join(lang_data_path, 'ger_attn_decoder1.pth')
+    # else:
+    #     input_lang_data_path = os.path.join(lang_data_path, 'input_lang_ger_data.pkl')
+    #     output_lang_data_path = os.path.join(lang_data_path, 'output_lang_ger_data.pkl')
+    #     encoder_lang_path = os.path.join(lang_data_path, 'ger_encoder1.pth')
+    #     decoder_lang_path = os.path.join(lang_data_path, 'ger_attn_decoder1.pth')
 
-    pkl_file = open(input_lang_data_path, 'rb')
-    input_lang_data = pickle.load(pkl_file)
-    input_lang = Lang('eng')
-    input_lang.load_dict(input_lang_data)
+    # pkl_file = open(input_lang_data_path, 'rb')
+    # input_lang_data = pickle.load(pkl_file)
+    # input_lang = Lang('eng')
+    # input_lang.load_dict(input_lang_data)
     
-    pkl_file = open(output_lang_data_path, 'rb')
-    output_lang_data = pickle.load(pkl_file)
-    output_lang = Lang('fra')
-    output_lang.load_dict(output_lang_data)
+    # pkl_file = open(output_lang_data_path, 'rb')
+    # output_lang_data = pickle.load(pkl_file)
+    # output_lang = Lang('fra')
+    # output_lang.load_dict(output_lang_data)
 
-    pkl_file.close()
+    # pkl_file.close()
 
-    #print input_lang.n_words
-    encoder1 = EncoderRNN(input_lang.n_words,hidden_size)
-    encoder1.load_state_dict(torch.load(encoder_lang_path))
+    # #print input_lang.n_words
+    # encoder1 = EncoderRNN(input_lang.n_words,hidden_size)
+    # encoder1.load_state_dict(torch.load(encoder_lang_path))
 
-    decoder1 = AttnDecoderRNN(hidden_size, output_lang.n_words, 1, dropout_p=0.1)
-    decoder1.load_state_dict(torch.load(decoder_lang_path))
+    # decoder1 = AttnDecoderRNN(hidden_size, output_lang.n_words, 1, dropout_p=0.1)
+    # decoder1.load_state_dict(torch.load(decoder_lang_path))
 
     # Add a period to end of sentence if not present and then normalize sentence
+
     norm_sentence = args.input_sentence
     if norm_sentence[-1:] != ".":
         norm_sentence = norm_sentence + "."
     norm_sentence = normalizeString(norm_sentence)
     try:
-        output_words, attentions = evaluate(encoder1, decoder1, input_lang, output_lang, norm_sentence)  
+        if (args.which_lang == 'french'):
+            #output_words, attentions = evaluate(encoder1, decoder1, input_lang, output_lang, norm_sentence)  
+            output_words, attentions = evaluate(encoder_french, decoder_french, input_lang_french, output_lang_french, norm_sentence)
+        else:
+            output_words, attentions = evaluate(encoder_german, decoder_german, input_lang_german, output_lang_german, norm_sentence) 
+
         output_sentence = ' '.join(output_words)
-        del encoder1, decoder1
+        #del encoder1, decoder1
         return output_sentence
     except KeyError as err:
         del encoder1, decoder1
